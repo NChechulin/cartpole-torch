@@ -34,7 +34,7 @@ class CartPoleSystem:
     target_state: State = State.target()
     simulation_time: float = 0.0
 
-    def advance_to(self, target_time: float) -> None:
+    def advance_to(self, target_time: float, best_input: float) -> None:
         """
         Advances the system to a given moment in time.
 
@@ -56,9 +56,9 @@ class CartPoleSystem:
         steps: int = round(time_delta / self.config.input_timestep)
 
         for _ in range(steps):
-            self.advance_one_step()
+            self.advance_one_step(best_input)
 
-    def advance_one_step(self) -> None:
+    def advance_one_step(self, best_input: float) -> None:
         """
         Advances the system one step further.
         One step equals `config.input_timestep` seconds.
@@ -71,18 +71,18 @@ class CartPoleSystem:
         dt: float = self.config.input_timestep / steps
 
         # FIXME: add real value
-        inp: float = 0  # Optimal input to the system
         grav: float = self.config.parameters.gravity  # Gravitational constant
         pole_len: float = self.config.parameters.pole_length
 
         for _ in range(steps):
             # Evaluate derivatives
+            ang = cur_st[1]  # 1x1 Tensor with angle
             delta_state: FloatTensor = FloatTensor(
                 [
                     cur_st[2] * dt,
                     cur_st[3] * dt,
-                    inp * dt,
-                    -(inp * cos(cur_st[1]) + grav * sin(cur_st[1])) / pole_len * dt,
+                    best_input * dt,
+                    -(best_input * cos(ang) + grav * sin(ang)) / pole_len * dt,
                 ]
             )
             cur_st += delta_state  # type: ignore
