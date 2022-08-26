@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from state import State
+
 from config import SystemConfiguration
+from state import State
 
 
 @dataclass

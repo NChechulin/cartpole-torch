@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from numpy import pi
 from torch import FloatTensor
 
