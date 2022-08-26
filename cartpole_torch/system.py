@@ -48,8 +48,14 @@ class CartPoleSystem:
         ValueError
             If target time is smaller than `simulation_time`.
         """
+        if target_time < self.simulation_time:
+            raise ValueError("Target time should be greater than current time")
 
-        raise NotImplementedError
+        time_delta: float = target_time - self.simulation_time
+        steps: int = round(time_delta / self.config.input_timestep)
+
+        for _ in range(steps):
+            self.advance_one_step()
 
     def advance_one_step(self) -> None:
         """
