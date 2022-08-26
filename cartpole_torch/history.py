@@ -64,6 +64,25 @@ class SystemHistory:
 
     entries: list[HistoryEntry] = field(default_factory=list)
 
+    def add_entry(self, timestamp: float, current_input: float, state: State) -> None:
+        """
+        Adds an entry to history
+
+        Parameters
+        ----------
+        `timestamp` : float
+            Time (in seconds) since the start of the simulation.
+
+        `current_input` : float
+            Input to the system during current step.
+            Measured in m/s^2 (meters per second squared).
+
+        `state` : State
+            Current state of the system (after the step).
+        """
+        # FIXME: Rewrite using concat (should be faster)
+        self.entries.append(HistoryEntry(timestamp, current_input, state))
+
     def as_tensor(self) -> FloatTensor:
         """
         Converts history to an Nx6 tensor
@@ -79,6 +98,7 @@ class SystemHistory:
             - `velocity` - velocity of the cart (float, m/s)
             - `angular_velocity` - angular velocity of the pole (float, rad/s)
         """
+        # FIXME: use concat with axis
         res = [entry.as_tensor() for entry in self.entries]  # type: ignore
         res: FloatTensor = torch.cat(res)  # type: ignore
 

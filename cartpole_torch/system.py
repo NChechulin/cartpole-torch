@@ -4,6 +4,8 @@ from config import SystemConfiguration
 from state import State
 from torch import FloatTensor, cos, sin
 
+from cartpole_torch.history import SystemHistory
+
 
 @dataclass
 class CartPoleSystem:
@@ -33,6 +35,7 @@ class CartPoleSystem:
     # TODO: think of cases when the field should be mutable
     target_state: State = State.target()
     simulation_time: float = 0.0
+    history: SystemHistory = SystemHistory()
 
     def advance_to(self, target_time: float, best_input: float) -> None:
         """
@@ -52,10 +55,7 @@ class CartPoleSystem:
         if target_time < self.simulation_time:
             raise ValueError("Target time should be greater than current time")
 
-        time_delta: float = target_time - self.simulation_time
-        steps: int = round(time_delta / self.config.input_timestep)
-
-        for _ in range(steps):
+        while self.simulation_time < target_time:
             self.advance_one_step(best_input)
 
     def advance_one_step(self, best_input: float) -> None:
@@ -86,4 +86,11 @@ class CartPoleSystem:
                 ]
             )
             cur_st += delta_state  # type: ignore
+
         self.current_state = State.from_collection(cur_st)  # type: ignore
+        self.history.add_entry(
+            timestamp=self.simulation_time,
+            current_input=best_input,
+            state=self.current_state,
+        )
+        self.simulation_time += self.config.input_timestep
