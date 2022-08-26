@@ -49,6 +49,23 @@ class State:
         """
         return State(0, 0, 0, 0)
 
+    @staticmethod
+    def target() -> "State":
+        """
+        Target (ideal) state of the system.
+
+        Returns
+        -------
+        State
+            Ideal state of the system
+        """
+        return State(
+            cart_position=0,
+            pole_angle=pi,
+            cart_velocity=0,
+            angular_velocity=0,
+        )
+
     def as_tensor(self) -> FloatTensor:
         """
         Returns current state as a 1x4 tensor
