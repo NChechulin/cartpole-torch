@@ -1,8 +1,18 @@
 from dataclasses import dataclass, field
+from enum import IntEnum, auto
 
 import torch
 from state import State
-from torch import FloatTensor
+from torch import FloatTensor, Tensor
+
+
+class HistoryTensorFields(IntEnum):
+    TIMESTAMP = 0
+    INPUT = auto()
+    CART_POSITION = auto()
+    POLE_ANGLE = auto()
+    CART_VELOCITY = auto()
+    POLE_ANGULAR_SPEED = auto()
 
 
 @dataclass
@@ -64,7 +74,12 @@ class SystemHistory:
 
     entries: list[HistoryEntry] = field(default_factory=list)
 
-    def add_entry(self, timestamp: float, current_input: float, state: State) -> None:
+    def add_entry(
+        self,
+        timestamp: float,
+        current_input: float,
+        state: State,
+    ) -> None:
         """
         Adds an entry to history
 
@@ -93,15 +108,76 @@ class SystemHistory:
             Nx6 tensor containing the following columns:
             - `timestamp` - time since start of the simulation (in seconds)
             - `input` - input to the system (float, m/s^2)
-            - `position` - position of the cart (float, m)
-            - `angle` - angle of the pole (float, rad)
-            - `velocity` - velocity of the cart (float, m/s)
-            - `angular_velocity` - angular velocity of the pole (float, rad/s)
+            - `cart_position` - position of the cart (float, m)
+            - `pole_angle` - angle of the pole (float, rad)
+            - `cart_velocity` - velocity of the cart (float, m/s)
+            - `pole_angular_velocity` - angular velocity of the
+            pole (float, rad/s)
         """
         # FIXME: use concat with axis
         res = [entry.as_tensor() for entry in self.entries]  # type: ignore
         res: FloatTensor = torch.cat(res)  # type: ignore
 
         return res.reshape([-1, 6])  # type: ignore
+
+    def timestamps(self) -> Tensor:
+        """
+        Returns
+        -------
+        Tensor
+            1xN Tensor with timestamps.
+        """
+        # FIXME: ineffective implementation (.as_tensor() is costy)
+        return self.as_tensor()[:, HistoryTensorFields.TIMESTAMP]
+
+    def inputs(self) -> Tensor:
+        """
+        Returns
+        -------
+        Tensor
+            1xN Tensor with inputs to the system.
+        """
+        # FIXME: ineffective implementation (.as_tensor() is costy)
+        return self.as_tensor()[:, HistoryTensorFields.INPUT]
+
+    def cart_positions(self) -> Tensor:
+        """
+        Returns
+        -------
+        Tensor
+            1xN Tensor with positions of the cart.
+        """
+        # FIXME: ineffective implementation (.as_tensor() is costy)
+        return self.as_tensor()[:, HistoryTensorFields.CART_POSITION]
+
+    def pole_angles(self) -> Tensor:
+        """
+        Returns
+        -------
+        Tensor
+            1xN Tensor with angles of the pole.
+        """
+        # FIXME: ineffective implementation (.as_tensor() is costy)
+        return self.as_tensor()[:, HistoryTensorFields.POLE_ANGLE]
+
+    def cart_velocities(self) -> Tensor:
+        """
+        Returns
+        -------
+        Tensor
+            1xN Tensor with velocities of the cart.
+        """
+        # FIXME: ineffective implementation (.as_tensor() is costy)
+        return self.as_tensor()[:, HistoryTensorFields.CART_VELOCITY]
+
+    def pole_angular_velocities(self) -> Tensor:
+        """
+        Returns
+        -------
+        Tensor
+            1xN Tensor with angles of the pole.
+        """
+        # FIXME: ineffective implementation (.as_tensor() is costy)
+        return self.as_tensor()[:, HistoryTensorFields.POLE_ANGULAR_SPEED]
 
     # TODO: add actual smart methods
