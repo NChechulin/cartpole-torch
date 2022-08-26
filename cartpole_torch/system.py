@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from config import SystemConfiguration
 from state import State
+from torch import FloatTensor, cos, sin
 
 
 @dataclass
@@ -63,4 +64,26 @@ class CartPoleSystem:
         One step equals `config.input_timestep` seconds.
         """
 
-        raise NotImplementedError
+        # Current state
+        cur_st: FloatTensor = self.current_state.as_tensor()
+        steps: int = self.config.dynamics_steps_per_input
+        # Delta time
+        dt: float = self.config.input_timestep / steps
+
+        # FIXME: add real value
+        inp: float = 0  # Optimal input to the system
+        grav: float = self.config.parameters.gravity  # Gravitational constant
+        pole_len: float = self.config.parameters.pole_length
+
+        for _ in range(steps):
+            # Evaluate derivatives
+            delta_state: FloatTensor = FloatTensor(
+                [
+                    cur_st[2] * dt,
+                    cur_st[3] * dt,
+                    inp * dt,
+                    -(inp * cos(cur_st[1]) + grav * sin(cur_st[1])) / pole_len * dt,
+                ]
+            )
+            cur_st += delta_state  # type: ignore
+        self.current_state = State.from_collection(cur_st)  # type: ignore
