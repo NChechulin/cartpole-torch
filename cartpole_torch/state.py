@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Collection
 
 from numpy import pi
 from torch import FloatTensor
@@ -84,4 +85,34 @@ class State:
                 self.cart_velocity,
                 self.angular_velocity,
             ]
+        )
+
+    @staticmethod
+    def from_collection(arr: Collection[float]) -> "State":
+        """
+        Creates a State object from an array of length 4.
+
+        Parameters
+        ----------
+        arr : Collection[float]
+            List/Array/Tensor containing `cart_position`, `pole_angle`,
+            `cart_velocity` and `angular_velocity`.
+
+        Returns
+        -------
+        State
+            State created from the collection.
+
+        Raises
+        ------
+        ValueError
+            If length of `arr` is not equal to 4.
+        """
+        if len(arr) != 4:
+            raise ValueError("Length of collection should be 4")
+        return State(
+            cart_position=arr[0],  # type: ignore
+            pole_angle=arr[1],  # type: ignore
+            cart_velocity=arr[2],  # type: ignore
+            angular_velocity=arr[3],  # type: ignore
         )
