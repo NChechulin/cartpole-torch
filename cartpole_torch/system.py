@@ -43,9 +43,12 @@ class CartPoleSystem:
 
         Parameters
         ----------
-        target_time : float
+        `target_time` : float
             New time of the system.
             Should be greater than `simulation_time`.
+        `best_input` : float
+            Input to the system (in m/s^2).
+            Will be removed.
 
         Raises
         ------
@@ -54,7 +57,7 @@ class CartPoleSystem:
         """
         if target_time < self.simulation_time:
             raise ValueError("Target time should be greater than current time")
-
+        # FIXME: Remove best input from args and calculate it each time
         while self.simulation_time < target_time:
             self.advance_one_step(best_input)
 
@@ -63,14 +66,12 @@ class CartPoleSystem:
         Advances the system one step further.
         One step equals `config.input_timestep` seconds.
         """
-
         # Current state
         cur_st: FloatTensor = self.current_state.as_tensor()
         steps: int = self.config.dynamics_steps_per_input
         # Delta time
         dt: float = self.config.input_timestep / steps
 
-        # FIXME: add real value
         grav: float = self.config.parameters.gravity  # Gravitational constant
         pole_len: float = self.config.parameters.pole_length
 
