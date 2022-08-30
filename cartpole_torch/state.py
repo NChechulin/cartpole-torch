@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Collection
 
 from numpy import pi
-from torch import FloatTensor
+from torch import DoubleTensor
 
 
 @dataclass
@@ -68,17 +68,17 @@ class State:
             angular_velocity=0,
         )
 
-    def as_tensor(self) -> FloatTensor:
+    def as_tensor(self) -> DoubleTensor:
         """
         Returns current state as a 1x4 tensor
 
         Returns
         -------
-        FloatTensor
+        DoubleTensor
             1x4 Tensor containing `cart_position`,
             `pole_angle`, `cart_velocity` and `angular_velocity`
         """
-        return FloatTensor(
+        return DoubleTensor(
             [
                 self.cart_position,
                 self.pole_angle,

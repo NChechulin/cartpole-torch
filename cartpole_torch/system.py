@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from config import SystemConfiguration
 from state import State
-from torch import FloatTensor, cos, sin
+from torch import DoubleTensor, cos, sin
 
 from cartpole_torch.history import SystemHistory
 
@@ -67,7 +67,7 @@ class CartPoleSystem:
         One step equals `config.input_timestep` seconds.
         """
         # Current state
-        cur_st: FloatTensor = self.current_state.as_tensor()
+        cur_st: DoubleTensor = self.current_state.as_tensor()
         steps: int = self.config.dynamics_steps_per_input
         # Delta time
         dt: float = self.config.input_timestep / steps
@@ -78,7 +78,7 @@ class CartPoleSystem:
         for _ in range(steps):
             # Evaluate derivatives
             ang = cur_st[1]  # 1x1 Tensor with angle
-            delta_state: FloatTensor = FloatTensor(
+            delta_state: DoubleTensor = DoubleTensor(
                 [
                     cur_st[2] * dt,
                     cur_st[3] * dt,

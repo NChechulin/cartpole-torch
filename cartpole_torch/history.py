@@ -3,7 +3,7 @@ from enum import IntEnum, auto
 
 import torch
 from state import State
-from torch import FloatTensor, Tensor
+from torch import DoubleTensor, Tensor
 
 
 class HistoryTensorFields(IntEnum):
@@ -37,13 +37,13 @@ class HistoryEntry:
     current_input: float
     state: State
 
-    def as_tensor(self) -> FloatTensor:
+    def as_tensor(self) -> DoubleTensor:
         """
         Represent history entry as a 1x6 tensor.
 
         Returns
         -------
-        FloatTensor
+        DoubleTensor
             Tensor of length 6 containing the following columns:
             - `timestamp` - time since start of the simulation (in seconds)
             - `input` - input to the system (float, m/s^2)
@@ -54,7 +54,7 @@ class HistoryEntry:
         """
 
         pos, angle, velocity, ang_speed = self.state.as_tensor()
-        return FloatTensor(
+        return DoubleTensor(
             [
                 self.timestamp,
                 self.current_input,
@@ -98,9 +98,9 @@ class SystemHistory:
         # FIXME: Rewrite using concat (should be faster)
         self.entries.append(HistoryEntry(timestamp, current_input, state))
 
-    def as_tensor(self) -> FloatTensor:
+    def as_tensor(self) -> DoubleTensor:
         """
-        Converts history to an Nx6 tensor
+        Converts history to a Nx6 tensor
 
         Returns
         -------
@@ -116,7 +116,7 @@ class SystemHistory:
         """
         # FIXME: use concat with axis
         res = [entry.as_tensor() for entry in self.entries]  # type: ignore
-        res: FloatTensor = torch.cat(res)  # type: ignore
+        res: DoubleTensor = torch.cat(res)  # type: ignore
 
         return res.reshape([-1, 6])  # type: ignore
 
