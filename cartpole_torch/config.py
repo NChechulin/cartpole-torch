@@ -1,5 +1,5 @@
 """
-Defines configuration of the system - its' limits and physical parameters
+Defines configuration of the system - its limits and physical parameters
 """
 from dataclasses import dataclass
 
@@ -56,7 +56,7 @@ class SystemParameters:
 @dataclass
 class SystemConfiguration:
     """
-    Contains physical parameters of the system and its' limits.
+    Contains physical parameters of the system and its limits.
 
     Fields
     ------
@@ -64,12 +64,12 @@ class SystemConfiguration:
         Physical parameters of the system.
 
     `limits` : SystemLimits
-        Limits of the system, such as maximum position and etc.
+        Limits of the system, such as maximum position, etc.
 
     `input_timestep` : float
         Time between adjusting the input of the system.
         We assume the input is the same during the step (i.e. between two
-        timesteps).
+        time steps).
         Measured in seconds.
 
     `dynamics_steps_per_input` : int
