@@ -3,7 +3,9 @@ from enum import IntEnum, auto
 
 import torch
 from state import State
-from torch import DoubleTensor, Tensor
+from torch import DoubleTensor, Tensor, cos, sin
+
+from cartpole_torch.config import SystemParameters
 
 
 class HistoryTensorFields(IntEnum):
@@ -12,7 +14,7 @@ class HistoryTensorFields(IntEnum):
     CART_POSITION = auto()
     POLE_ANGLE = auto()
     CART_VELOCITY = auto()
-    POLE_ANGULAR_SPEED = auto()
+    POLE_ANGULAR_VELOCITY = auto()
 
 
 @dataclass
@@ -53,7 +55,7 @@ class HistoryEntry:
             - `angular_velocity` - angular velocity of the pole (float, rad/s)
         """
 
-        pos, angle, velocity, ang_speed = self.state.as_tensor()
+        pos, angle, velocity, ang_velocity = self.state.as_tensor()
         return DoubleTensor(
             [
                 self.timestamp,
@@ -61,7 +63,7 @@ class HistoryEntry:
                 pos,
                 angle,
                 velocity,
-                ang_speed,
+                ang_velocity,
             ]
         )
 
@@ -178,6 +180,35 @@ class SystemHistory:
             1xN Tensor with angles of the pole.
         """
         # FIXME: ineffective implementation (.as_tensor() is costy)
-        return self.as_tensor()[:, HistoryTensorFields.POLE_ANGULAR_SPEED]
+        return self.as_tensor()[:, HistoryTensorFields.POLE_ANGULAR_VELOCITY]
+
+    def total_energies(self, config: SystemParameters) -> Tensor:
+        """
+        Returns
+        -------
+        Tensor
+            1xN Tensor with total energies at each step.
+        """
+        # FIXME: ineffective implementation (.as_tensor() is costy)
+
+        kin_cart = torch.zeros(
+            len(self.entries)
+        )  # FIXME: add actual cart mass to config
+        pot_cart = torch.zeros(len(self.entries))
+
+        m_p = config.pole_mass
+        l_p = config.pole_length
+        g = config.gravity
+
+        pot_pole = m_p * g * l_p / 2 * (1 - cos(self.pole_angles()))  # FIXME: add l/2
+
+        vs = self.cart_velocities()
+        ws = self.pole_angular_velocities()
+        kin_pole = (m_p / 2) * (
+            vs**2  # xdot^2
+            + ((l_p**2) * (ws**2)) / 3  # l^2 * th^2 / 3
+            + l_p * vs * ws * cos(self.pole_angles())  # l * xdot * thdot * cos(th)
+        )
+        return kin_cart + pot_cart + kin_pole + pot_pole
 
     # TODO: add actual smart methods
