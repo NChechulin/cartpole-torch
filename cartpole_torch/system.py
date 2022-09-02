@@ -1,10 +1,16 @@
 from dataclasses import dataclass
 
+import torch
 from config import SystemConfiguration
+from learning_context import MultiSystemLearningContext
 from state import State
 from torch import DoubleTensor, cos, sin
 
 from cartpole_torch.history import SystemHistory
+
+# FIXME: CartPoleSystem and CartPoleMultiSystem are not interchangable.
+# Think of a way to create some kind of a base class
+# Or simply say that CartPoleSystem is a MultiSystem with 1 state.
 
 
 @dataclass
@@ -99,3 +105,62 @@ class CartPoleSystem:
         )
         self.current_state = State.from_collection(cur_st)  # type: ignore
         self.simulation_time += 1 / self.config.discretization.input_time
+
+
+class CartPoleMultiSystem:
+    @staticmethod
+    def get_new_positions(
+        context: MultiSystemLearningContext, inputs: DoubleTensor
+    ) -> DoubleTensor:
+        """
+        Reterns positions after applying `inputs`
+
+        Parameters
+        ----------
+        context : MultiSystemLearningContext
+        inputs : DoubleTensor
+            A 1xN tensor containing input cart accelerations.
+
+        Returns
+        -------
+        DoubleTensor
+            A 4xN Tensor containing N states after an input tick.
+            By default input tick is
+            `1 / context.config.discretization.input_time`
+        """
+        # Current state
+        cur_st = context.batch_state.states
+        cur_st: DoubleTensor = torch.clone(cur_st)  # type: ignore
+        steps: int = context.config.dynamics_steps_per_input
+        # dynamics delta time
+        dt: float = 1 / (steps * context.config.discretization.input_time)
+
+        # Gravitational constant
+        grav: float = context.config.parameters.gravity
+        pole_len: float = context.config.parameters.pole_length
+
+        def __compute_derivative(state: DoubleTensor):
+            # FIXME : Use 2 pre-allocated arrays instead of creating new ones
+            ang = state[1]
+            return torch.vstack(
+                (
+                    state[2],
+                    state[3],
+                    inputs,
+                    -1.5 / pole_len * (inputs * cos(ang) + grav * sin(ang)),
+                )
+            )
+
+        for _ in range(steps):
+            # Evaluate derivatives
+            t1 = __compute_derivative(cur_st)
+            t2 = __compute_derivative(cur_st + t1 * dt)  # type: ignore
+            cur_st += (t1 + t2) / 2 * dt  # type: ignore
+
+        return cur_st
+
+    @staticmethod
+    def get_best_accelerations(
+        context: MultiSystemLearningContext,
+    ) -> DoubleTensor:
+        pass
