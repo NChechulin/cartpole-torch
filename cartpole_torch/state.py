@@ -175,3 +175,19 @@ class MultiSystemState:
         """
         data = all_states[:, batch]
         return MultiSystemState(_data=data)  # type: ignore
+
+    @property
+    def size(self) -> int:
+        """
+        Returns the number of systems in current state
+
+        Returns
+        -------
+        int
+            The number of systems in current state
+        """
+        return self._data.shape[1]
+
+    @property
+    def states(self) -> DoubleTensor:
+        return self._data
