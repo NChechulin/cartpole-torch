@@ -106,6 +106,8 @@ class SystemConfiguration:
         10 times before adjusting the input.
     """
 
+    # FIXME: UPDATE docstring
+
     parameters: SystemParameters = SystemParameters()
     limits: SystemLimits = SystemLimits()
     discretization: DiscretizationParameters = DiscretizationParameters()
