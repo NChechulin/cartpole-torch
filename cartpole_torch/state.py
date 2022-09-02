@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Collection
 
 from numpy import pi
-from torch import DoubleTensor
+from torch import DoubleTensor, IntTensor
 
 
 @dataclass
@@ -116,3 +116,62 @@ class State:
             cart_velocity=arr[2],  # type: ignore
             angular_velocity=arr[3],  # type: ignore
         )
+
+
+@dataclass
+class MultiSystemState:
+    """
+    A class to represent states of multiple systems at a time.
+    """
+
+    # 4xN tensor, where N is the number of systems
+    # data[0] is a 1xN DoubleTensor containing cart positions
+    # data[1] is a 1xN DoubleTensor containing pole angles
+    # data[2] is a 1xN DoubleTensor containing cart velocities
+    # data[3] is a 1xN DoubleTensor containing pole angular velocities
+    _data: DoubleTensor
+
+    @staticmethod
+    def home(systems_num: int) -> "MultiSystemState":
+        """
+        Initializes a MultiSystemState with home states.
+
+        Parameters
+        ----------
+        systems_num : int
+            Number of systems to simulate.
+
+        Returns
+        -------
+        MultiSystemState
+        """
+        data = DoubleTensor(size=(4, systems_num))
+        home_state = State.home().as_tensor()
+
+        for i in range(systems_num):
+            data[:, i] = home_state
+
+        return MultiSystemState(_data=data)
+
+    @staticmethod
+    def from_batch(
+        all_states: DoubleTensor,
+        batch: IntTensor,
+    ) -> "MultiSystemState":
+        """
+        Constructs a MultiSystemState from a sample of a state space.
+
+        Parameters
+        ----------
+        all_states : DoubleTensor
+            The state space (4xN DoubleTensor).
+        batch : IntTensor
+            A vector of integers containing the indexes of states
+            we want to simulate.
+
+        Returns
+        -------
+        MultiSystemState
+        """
+        data = all_states[:, batch]
+        return MultiSystemState(_data=data)  # type: ignore
