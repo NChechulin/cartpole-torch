@@ -70,7 +70,7 @@ class CartPoleSystem:
         cur_st: DoubleTensor = self.current_state.as_tensor()
         steps: int = self.config.dynamics_steps_per_input
         # Delta time
-        dt: float = self.config.input_timestep / steps
+        dt: float = 1 / (steps * self.config.discretization.input_time)
 
         grav: float = self.config.parameters.gravity  # Gravitational constant
         pole_len: float = self.config.parameters.pole_length
@@ -98,4 +98,4 @@ class CartPoleSystem:
             state=self.current_state,
         )
         self.current_state = State.from_collection(cur_st)  # type: ignore
-        self.simulation_time += self.config.input_timestep
+        self.simulation_time += 1 / self.config.discretization.input_time

@@ -31,6 +31,32 @@ class SystemLimits:
 
 
 @dataclass
+class DiscretizationParameters:
+    """
+    This class contains the parameters used for discretization
+    of state space and time.
+
+    Each field except `input_time` defines the number of samples
+    for each dimension.
+    `cart_position = 50` would mean that we take 50 equidistant points
+    from `[-max_abs_position, max_abs_position]`.
+
+    `input_time` stores the discretization of input times.
+    Value of `100` would mean that we can change out input 100 times a second.
+
+    `dynamics_per_time_step` is the number
+    """
+
+    cart_position: int = 50
+    pole_angle: int = 21
+    cart_velocity: int = 50
+    pole_angular_velocity: int = 126
+    cart_acceleration: int = 35
+
+    input_time: int = 100
+
+
+@dataclass
 class SystemParameters:
     """
     Represents physical parameters of the system
@@ -82,5 +108,5 @@ class SystemConfiguration:
 
     parameters: SystemParameters = SystemParameters()
     limits: SystemLimits = SystemLimits()
-    input_timestep: float = 1e-2
+    discretization: DiscretizationParameters = DiscretizationParameters()
     dynamics_steps_per_input: int = 10
