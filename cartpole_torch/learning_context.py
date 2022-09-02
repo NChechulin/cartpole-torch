@@ -16,7 +16,7 @@ class MultiSystemLearningContext:
     inputs_cost_fn: CostFunction
     config: SystemConfiguration
     all_states: DoubleTensor
-    batch_state: Optional[MultiSystemState] = None
+    batch_state: MultiSystemState
 
     def update_batch(self, batch_size: int) -> None:
         """
