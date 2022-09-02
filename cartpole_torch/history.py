@@ -3,7 +3,7 @@ from enum import IntEnum, auto
 
 import torch
 from state import State
-from torch import DoubleTensor, Tensor, cos, sin
+from torch import DoubleTensor, Tensor, cos
 
 from cartpole_torch.config import SystemParameters
 
@@ -200,14 +200,14 @@ class SystemHistory:
         l_p = config.pole_length
         g = config.gravity
 
-        pot_pole = m_p * g * l_p / 2 * (1 - cos(self.pole_angles()))  # FIXME: add l/2
+        pot_pole = m_p * g * l_p / 2 * (1 - cos(self.pole_angles()))
 
         vs = self.cart_velocities()
         ws = self.pole_angular_velocities()
         kin_pole = (m_p / 2) * (
-            vs**2  # xdot^2
-            + ((l_p**2) * (ws**2)) / 3  # l^2 * th^2 / 3
-            + l_p * vs * ws * cos(self.pole_angles())  # l * xdot * thdot * cos(th)
+            vs**2
+            + ((l_p**2) * (ws**2)) / 3
+            + l_p * vs * ws * cos(self.pole_angles())
         )
         return kin_cart + pot_cart + kin_pole + pot_pole
 

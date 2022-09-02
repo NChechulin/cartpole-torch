@@ -75,20 +75,21 @@ class CartPoleSystem:
         grav: float = self.config.parameters.gravity  # Gravitational constant
         pole_len: float = self.config.parameters.pole_length
 
-        def __compute_derivative(state):
+        def __compute_derivative(state: DoubleTensor):
             # FIXME: Use 2 pre-allocated arrays instead of creating new ones
             delta_state = DoubleTensor([0, 0, 0, 0])
             ang = state[1]  # 1x1 Tensor with angle
+            u = best_input
             delta_state[0] = state[2]
             delta_state[1] = state[3]
-            delta_state[2] = best_input
-            delta_state[3] = -1.5 / pole_len * (best_input * cos(ang) + grav * sin(ang))
+            delta_state[2] = u
+            delta_state[3] = -1.5 / pole_len * (u * cos(ang) + grav * sin(ang))
             return delta_state
 
         for _ in range(steps):
             # Evaluate derivatives
             t1 = __compute_derivative(cur_st)
-            t2 = __compute_derivative(cur_st + t1 * dt)
+            t2 = __compute_derivative(cur_st + t1 * dt)  # type: ignore
             cur_st += (t1 + t2) / 2 * dt  # type: ignore
 
         self.history.add_entry(
