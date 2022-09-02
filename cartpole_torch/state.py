@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Collection
 
 from numpy import pi
-from torch import DoubleTensor, IntTensor
+from torch import DoubleTensor, LongTensor
 
 
 @dataclass
@@ -156,7 +156,7 @@ class MultiSystemState:
     @staticmethod
     def from_batch(
         all_states: DoubleTensor,
-        batch: IntTensor,
+        batch: LongTensor,
     ) -> "MultiSystemState":
         """
         Constructs a MultiSystemState from a sample of a state space.

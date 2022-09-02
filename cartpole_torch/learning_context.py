@@ -4,7 +4,7 @@ from typing import Callable, Optional
 import torch
 from config import SystemConfiguration
 from state import MultiSystemState
-from torch import DoubleTensor, IntTensor
+from torch import DoubleTensor, LongTensor
 
 CostFunction = Callable[[DoubleTensor], DoubleTensor]
 
@@ -39,9 +39,9 @@ class MultiSystemLearningContext:
             raise ValueError("Invalid batch size")
 
         # Generate 1xK tensor with values from [0, 1)
-        rand = torch.rand(size=batch_size)  # type: ignore
+        rand = torch.rand(batch_size)  # type: ignore
 
         # Multiply the numbers so they are integers from [0, total_states)
-        batch: IntTensor = (rand * total_states).int()  # type: ignore
+        batch: LongTensor = (rand * total_states).long()  # type: ignore
 
         self.batch_state = MultiSystemState.from_batch(self.all_states, batch)
