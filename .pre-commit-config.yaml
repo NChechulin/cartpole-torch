@@ -21,7 +21,7 @@ repos:
       - id: dev-requirements
         name: dev-requirements
         description: Export production and development requirements
-        entry: poetry export --dev -o requirements-dev.txt
+        entry: poetry export --with dev -o requirements-dev.txt
         language: python
         pass_filenames: false
   - repo: https://github.com/psf/black
