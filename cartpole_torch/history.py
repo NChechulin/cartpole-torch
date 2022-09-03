@@ -9,7 +9,7 @@ This module contains 3 classes related to keeping record of systems states:
 """
 
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import IntEnum, auto
 
 import torch
@@ -90,7 +90,8 @@ class SystemHistory:
     methods to explore data.
     """
 
-    entries: list[HistoryEntry] = field(default_factory=list)
+    _history: DoubleTensor = DoubleTensor()
+    # entries: list[HistoryEntry] = field(default_factory=list)
 
     def add_entry(
         self,
@@ -113,8 +114,9 @@ class SystemHistory:
         `state` : State
             Current state of the system (after the step).
         """
-        # FIXME: Rewrite using concat (should be faster)
-        self.entries.append(HistoryEntry(timestamp, current_input, state))
+        entry = HistoryEntry(timestamp, current_input, state)
+        entry_t = entry.as_tensor().reshape(1, -1)
+        self._history = torch.cat((self._history, entry_t))  # type: ignore
 
     def as_tensor(self) -> DoubleTensor:
         """
@@ -132,11 +134,7 @@ class SystemHistory:
             - `pole_angular_velocity` - angular velocity of the
             pole (float, rad/s)
         """
-        # FIXME: use concat with axis
-        res = [entry.as_tensor() for entry in self.entries]  # type: ignore
-        res: DoubleTensor = torch.cat(res)  # type: ignore
-
-        return res.reshape([-1, 6])  # type: ignore
+        return self._history
 
     def timestamps(self) -> Tensor:
         """
@@ -145,8 +143,7 @@ class SystemHistory:
         Tensor
             1xN Tensor with timestamps.
         """
-        # FIXME: ineffective implementation (.as_tensor() is costy)
-        return self.as_tensor()[:, HistoryTensorFields.TIMESTAMP]
+        return self._history[:, HistoryTensorFields.TIMESTAMP]
 
     def inputs(self) -> Tensor:
         """
@@ -155,8 +152,7 @@ class SystemHistory:
         Tensor
             1xN Tensor with inputs to the system.
         """
-        # FIXME: ineffective implementation (.as_tensor() is costy)
-        return self.as_tensor()[:, HistoryTensorFields.INPUT]
+        return self._history[:, HistoryTensorFields.INPUT]
 
     def cart_positions(self) -> Tensor:
         """
@@ -165,8 +161,7 @@ class SystemHistory:
         Tensor
             1xN Tensor with positions of the cart.
         """
-        # FIXME: ineffective implementation (.as_tensor() is costy)
-        return self.as_tensor()[:, HistoryTensorFields.CART_POSITION]
+        return self._history[:, HistoryTensorFields.CART_POSITION]
 
     def pole_angles(self) -> Tensor:
         """
@@ -175,8 +170,7 @@ class SystemHistory:
         Tensor
             1xN Tensor with angles of the pole.
         """
-        # FIXME: ineffective implementation (.as_tensor() is costy)
-        return self.as_tensor()[:, HistoryTensorFields.POLE_ANGLE]
+        return self._history[:, HistoryTensorFields.POLE_ANGLE]
 
     def cart_velocities(self) -> Tensor:
         """
@@ -185,8 +179,7 @@ class SystemHistory:
         Tensor
             1xN Tensor with velocities of the cart.
         """
-        # FIXME: ineffective implementation (.as_tensor() is costy)
-        return self.as_tensor()[:, HistoryTensorFields.CART_VELOCITY]
+        return self._history[:, HistoryTensorFields.CART_VELOCITY]
 
     def pole_angular_velocities(self) -> Tensor:
         """
@@ -195,8 +188,14 @@ class SystemHistory:
         Tensor
             1xN Tensor with angles of the pole.
         """
-        # FIXME: ineffective implementation (.as_tensor() is costy)
-        return self.as_tensor()[:, HistoryTensorFields.POLE_ANGULAR_VELOCITY]
+        return self._history[:, HistoryTensorFields.POLE_ANGULAR_VELOCITY]
+
+    @property
+    def size(self) -> int:
+        """
+        Returns the number of records in history.
+        """
+        return self._history.shape[1]
 
     def total_energies(self, config: SystemParameters) -> Tensor:
         """
@@ -205,12 +204,9 @@ class SystemHistory:
         Tensor
             1xN Tensor with total energies at each step.
         """
-        # FIXME: ineffective implementation (.as_tensor() is costy)
-
-        kin_cart = torch.zeros(
-            len(self.entries)
-        )  # FIXME: add actual cart mass to config
-        pot_cart = torch.zeros(len(self.entries))
+        kin_cart: DoubleTensor = (
+            config.cart_mass * (self.cart_velocities() ** 2) / 2  # type: ignore
+        )
 
         pot_pole = (
             config.pole_mass
@@ -232,7 +228,10 @@ class SystemHistory:
                 * cos(self.pole_angles())
             )
         )
-        return kin_cart + pot_cart + kin_pole + pot_pole
+
+        # cart does not have a potential energy since it
+        # does not travel vertically
+        return kin_cart + kin_pole + pot_pole
 
     # TODO: add actual smart methods
     # like plotting / generating animations / smth else
