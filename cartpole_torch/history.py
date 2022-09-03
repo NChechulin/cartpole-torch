@@ -122,6 +122,9 @@ class SystemHistory:
     """
     A smart container for history entries which provides convenient
     methods to explore data.
+
+    Allows to iterate over HistoryEntries while still being fast
+    when adding new entries.
     """
 
     _history: DoubleTensor = DoubleTensor()
@@ -281,6 +284,13 @@ class SystemHistory:
         return HistoryEntry.from_tensor(data)  # type: ignore
 
     def get_entries(self) -> list[HistoryEntry]:
+        """
+        Returns history as a list of History Entries (costy!).
+
+        Returns
+        -------
+        list[HistoryEntry]
+        """
         return [HistoryEntry.from_tensor(row) for row in self._history]  # type: ignore
 
     # TODO: add actual smart methods
