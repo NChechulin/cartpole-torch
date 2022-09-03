@@ -195,19 +195,27 @@ class SystemHistory:
         )  # FIXME: add actual cart mass to config
         pot_cart = torch.zeros(len(self.entries))
 
-        m_p = config.pole_mass
-        l_p = config.pole_length
-        g = config.gravity
+        pot_pole = (
+            config.pole_mass
+            * config.gravity
+            * config.pole_length
+            / 2
+            * (1 - cos(self.pole_angles()))
+        )
 
-        pot_pole = m_p * g * l_p / 2 * (1 - cos(self.pole_angles()))
-
-        vs = self.cart_velocities()
-        ws = self.pole_angular_velocities()
-        kin_pole = (m_p / 2) * (
-            vs**2
-            + ((l_p**2) * (ws**2)) / 3
-            + l_p * vs * ws * cos(self.pole_angles())
+        velocities = self.cart_velocities()
+        angular_velocities = self.pole_angular_velocities()
+        kin_pole = (config.pole_mass / 2) * (
+            velocities**2
+            + ((config.pole_length**2) * (angular_velocities**2)) / 3
+            + (
+                config.pole_length
+                * velocities
+                * angular_velocities
+                * cos(self.pole_angles())
+            )
         )
         return kin_cart + pot_cart + kin_pole + pot_pole
 
     # TODO: add actual smart methods
+    # like plotting / generating animations / smth else
