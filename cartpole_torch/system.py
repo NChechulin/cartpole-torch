@@ -4,7 +4,7 @@ import torch
 from config import SystemConfiguration
 from learning_context import MultiSystemLearningContext
 from state import State
-from torch import DoubleTensor, cos, sin
+from torch import BoolTensor, DoubleTensor, cos, sin
 
 from cartpole_torch.history import SystemHistory
 
@@ -109,7 +109,7 @@ class CartPoleSystem:
 
 class CartPoleMultiSystem:
     @staticmethod
-    def get_new_positions(
+    def get_new_states(
         context: MultiSystemLearningContext, inputs: DoubleTensor
     ) -> DoubleTensor:
         """
@@ -160,7 +160,80 @@ class CartPoleMultiSystem:
         return cur_st
 
     @staticmethod
+    def eval_transition_costs(
+        context: MultiSystemLearningContext,
+        new_states: DoubleTensor,
+        inputs: DoubleTensor,
+    ) -> DoubleTensor:
+        """
+        Evaluates new states cost and action costs.
+
+        Parameters
+        ----------
+        context : MultiSystemLearningContext
+        new_states : DoubleTensor
+            States after applying inputs (after transition).
+        inputs : DoubleTensor
+            The inputs applied
+
+        Returns
+        -------
+        DoubleTensor
+            1xK Tensor containing total cost of applying
+            i-th action to i-th state.
+        """
+        states_cost = context.states_cost_fn(new_states)
+        inputs_cost = context.inputs_cost_fn(inputs)
+
+        return states_cost + inputs_cost  # type: ignore
+
+    @staticmethod
     def get_best_accelerations(
         context: MultiSystemLearningContext,
     ) -> DoubleTensor:
-        pass
+        """
+        Returns best input for each state.
+
+        Parameters
+        ----------
+        context : MultiSystemLearningContext
+        Returns
+        -------
+        DoubleTensor
+            1xK Tensor with best inputs for all the states.
+        """
+        best_costs: DoubleTensor = torch.full(
+            size=(context.batch_size,),
+            fill_value=torch.inf,
+            dtype=torch.float64,
+        )  # type: ignore
+        best_inputs: DoubleTensor = torch.zeros(
+            size=(context.batch_size,),
+            dtype=torch.float64,
+        )  # type: ignore
+
+        for acc in context.discreditizer.cart_accelerations:
+            inputs: DoubleTensor = torch.full(
+                size=(context.batch_size,),
+                fill_value=acc,  # type: ignore
+                dtype=torch.float64,
+            )  # type: ignore
+
+            new_states = CartPoleMultiSystem.get_new_states(context, inputs)
+            costs = CartPoleMultiSystem.eval_transition_costs(
+                context,
+                new_states,
+                inputs,
+            )
+
+            # Define a mask which says if i-th cost was better than current one
+            rng = range(context.batch_size)
+
+            better_mask = [costs[i] < best_costs[i] for i in rng]
+
+            # update minimum costs
+            best_costs = torch.minimum(best_costs, costs)  # type: ignore
+            # update best inputs
+            best_inputs[better_mask] = acc
+
+        return best_inputs
