@@ -1,3 +1,9 @@
+"""
+This module contains a MultiSystemLearningContext which is a container
+for all of the data which is used to train a model which
+works with batches (multiple systems at a time).
+"""
+
 from dataclasses import dataclass
 from typing import Callable
 
@@ -12,7 +18,11 @@ CostFunction = Callable[[DoubleTensor], DoubleTensor]
 
 @dataclass
 class MultiSystemLearningContext:
-    # FIXME: Add docstrings
+    """
+    A container for all the data which is used to train a model which
+    works with batches (multiple systems at a time).
+    """
+
     states_cost_fn: CostFunction
     inputs_cost_fn: CostFunction
     config: SystemConfiguration
@@ -36,7 +46,7 @@ class MultiSystemLearningContext:
         """
         total_states = self.discreditizer.space_size
 
-        if not (0 < batch_size <= total_states):
+        if not 0 < batch_size <= total_states:
             raise ValueError("Invalid batch size")
 
         # Generate 1xK tensor with values from [0, 1)
@@ -52,4 +62,11 @@ class MultiSystemLearningContext:
 
     @property
     def batch_size(self) -> int:
+        """
+        Returns the size of the current batch.
+
+        Returns
+        -------
+        int
+        """
         return self.batch_state.size
