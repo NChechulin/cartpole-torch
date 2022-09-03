@@ -125,6 +125,7 @@ class SystemHistory:
     """
 
     _history: DoubleTensor = DoubleTensor()
+    __iter_index = -1
 
     def add_entry(
         self,
@@ -228,7 +229,7 @@ class SystemHistory:
         """
         Returns the number of records in history.
         """
-        return self._history.shape[1]
+        return self._history.shape[0]
 
     def total_energies(self, config: SystemParameters) -> Tensor:
         """
@@ -265,6 +266,22 @@ class SystemHistory:
         # cart does not have a potential energy since it
         # does not travel vertically
         return kin_cart + kin_pole + pot_pole
+
+    def __iter__(self) -> "SystemHistory":
+        self.__iter_index = -1
+        return self
+
+    def __next__(self) -> HistoryEntry:
+        self.__iter_index += 1
+
+        if self.__iter_index == self.size:
+            raise StopIteration
+
+        data = self._history[self.__iter_index]
+        return HistoryEntry.from_tensor(data)  # type: ignore
+
+    def get_entries(self) -> list[HistoryEntry]:
+        return [HistoryEntry.from_tensor(row) for row in self._history]  # type: ignore
 
     # TODO: add actual smart methods
     # like plotting / generating animations / smth else
