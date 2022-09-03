@@ -82,6 +82,40 @@ class HistoryEntry:
             ]
         )
 
+    @staticmethod
+    def from_tensor(data: DoubleTensor) -> "HistoryEntry":
+        """
+        Creates a History Entry from tensor with its data.
+
+        Parameters
+        ----------
+        data : DoubleTensor
+            Tensor of length 6 containing the following columns:
+            - `timestamp` - time since start of the simulation (in seconds)
+            - `input` - input to the system (float, m/s^2)
+            - `position` - position of the cart (float, m)
+            - `angle` - angle of the pole (float, rad)
+            - `velocity` - velocity of the cart (float, m/s)
+            - `angular_velocity` - angular velocity of the pole (float, rad/s)
+
+        Returns
+        -------
+        HistoryEntry
+        """
+        timestamp = float(data[HistoryTensorFields.TIMESTAMP])
+        current_input = float(data[HistoryTensorFields.INPUT])
+
+        state = State.from_collection(
+            [
+                float(data[HistoryTensorFields.CART_POSITION]),
+                float(data[HistoryTensorFields.POLE_ANGLE]),
+                float(data[HistoryTensorFields.CART_VELOCITY]),
+                float(data[HistoryTensorFields.POLE_ANGULAR_VELOCITY]),
+            ]
+        )
+
+        return HistoryEntry(timestamp, current_input, state)
+
 
 @dataclass
 class SystemHistory:
@@ -91,7 +125,6 @@ class SystemHistory:
     """
 
     _history: DoubleTensor = DoubleTensor()
-    # entries: list[HistoryEntry] = field(default_factory=list)
 
     def add_entry(
         self,
