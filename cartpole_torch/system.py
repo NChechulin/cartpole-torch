@@ -8,7 +8,7 @@ differences:
 - `CartPoleMultiSystem` has a different approach. The systems data is stored
     in a `MultiSystemLearningContext` and the system itself only performs
     neccessary calculations for multiple CartPole systems at a time.
-    It provides a "procedural" interface which allows us to change contexts
+    It provides a "functional" interface which allows us to change contexts
     on fly if needed.
 
     It supports evaluating best inputs for a given set of states and also
@@ -146,7 +146,7 @@ class CartPoleSystem:
 
 class CartPoleMultiSystem:
     """
-    Provides a "procedural" interface to evaluate best inputs and new states
+    Provides a "functional" interface to evaluate best inputs and new states
     (after applying inputs to given ones).
     The systems data is stored
     in a `MultiSystemLearningContext` and the system itself only performs
