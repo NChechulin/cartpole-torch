@@ -30,25 +30,25 @@ class Discreditizer:
         """
         Generates all states from configuration.
         """
-        xs = torch.linspace(  # type: ignore
+        positions = torch.linspace(  # type: ignore
             start=-self.config.limits.max_abs_position,
             end=self.config.limits.max_abs_position,
             steps=self.config.discretization.cart_position,
             dtype=torch.float64,
         )
-        thetas = torch.linspace(  # type: ignore
+        angles = torch.linspace(  # type: ignore
             start=0.0,
             end=2 * torch.pi,
             steps=self.config.discretization.pole_angle,
             dtype=torch.float64,
         )
-        xdots = torch.linspace(  # type: ignore
+        velocities = torch.linspace(  # type: ignore
             start=-self.config.limits.max_abs_velocity,
             end=self.config.limits.max_abs_velocity,
             steps=self.config.discretization.cart_velocity,
             dtype=torch.float64,
         )
-        thetadots = torch.linspace(  # type: ignore
+        angular_velocities = torch.linspace(  # type: ignore
             start=-self.config.limits.max_abs_angular_velocity,
             end=self.config.limits.max_abs_angular_velocity,
             steps=self.config.discretization.pole_angular_velocity,
@@ -62,22 +62,22 @@ class Discreditizer:
         )
 
         # Generate all possible states tensor
-        xs, thetas, xdots, thetadots = torch.meshgrid(
+        positions, angles, velocities, angular_velocities = torch.meshgrid(
             [
-                xs,
-                thetas,
-                xdots,
-                thetadots,
+                positions,
+                angles,
+                velocities,
+                angular_velocities,
             ],
             indexing="ij",
         )
 
         self.__all_states = torch.vstack(  # type: ignore
             [
-                xs.flatten(),
-                thetas.flatten(),
-                xdots.flatten(),
-                thetadots.flatten(),
+                positions.flatten(),
+                angles.flatten(),
+                velocities.flatten(),
+                angular_velocities.flatten(),
             ]
         )
 
