@@ -1,3 +1,11 @@
+"""
+This module contains 2 important dataclasses:
+- `State` which represents the state of one system
+- `MultiSystemState` which holds states of multiple systems.
+The latter one is usually a batch.
+"""
+
+
 from dataclasses import dataclass
 from typing import Collection
 
@@ -8,7 +16,7 @@ from torch import DoubleTensor, LongTensor
 @dataclass
 class State:
     """
-    Represents state of the system
+    Represents state of the system.
 
     Fields
     ------
@@ -124,12 +132,14 @@ class MultiSystemState:
     A class to represent states of multiple systems at a time.
     """
 
-    # 4xN tensor, where N is the number of systems
-    # data[0] is a 1xN DoubleTensor containing cart positions
-    # data[1] is a 1xN DoubleTensor containing pole angles
-    # data[2] is a 1xN DoubleTensor containing cart velocities
-    # data[3] is a 1xN DoubleTensor containing pole angular velocities
-    _data: DoubleTensor
+    _state_space: DoubleTensor
+    """
+    4xN tensor, where N is the number of systems
+    - `__state_space[0]` is a 1xN DoubleTensor containing cart positions
+    - `__state_space[1]` is a 1xN DoubleTensor containing pole angles
+    - `__state_space[2]` is a 1xN DoubleTensor containing cart velocities
+    - `__state_space[3]` is a 1xN DoubleTensor containing angular velocities
+    """
 
     @staticmethod
     def home(systems_num: int) -> "MultiSystemState":
@@ -151,7 +161,7 @@ class MultiSystemState:
         for i in range(systems_num):
             data[:, i] = home_state
 
-        return MultiSystemState(_data=data)
+        return MultiSystemState(_state_space=data)  # type: ignore
 
     @staticmethod
     def from_batch(
@@ -174,7 +184,7 @@ class MultiSystemState:
         MultiSystemState
         """
         data = all_states[:, batch]
-        return MultiSystemState(_data=data)  # type: ignore
+        return MultiSystemState(_state_space=data)  # type: ignore
 
     @property
     def size(self) -> int:
@@ -186,8 +196,16 @@ class MultiSystemState:
         int
             The number of systems in current state
         """
-        return self._data.shape[1]
+        return self._state_space.shape[1]
 
     @property
     def states(self) -> DoubleTensor:
-        return self._data
+        """
+        Returns all states
+
+        Returns
+        -------
+        DoubleTensor
+            _description_
+        """
+        return self._state_space
