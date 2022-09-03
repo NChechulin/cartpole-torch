@@ -3,10 +3,9 @@ from typing import Callable
 
 import torch
 from config import SystemConfiguration
+from discreditizer import Discreditizer
 from state import MultiSystemState
 from torch import DoubleTensor, LongTensor
-
-from cartpole_torch.discreditizer import Discreditizer
 
 CostFunction = Callable[[DoubleTensor], DoubleTensor]
 
