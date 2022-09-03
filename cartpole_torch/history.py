@@ -1,3 +1,14 @@
+"""
+This module contains 3 classes related to keeping record of systems states:
+- `HistoryTensorFields` is a simple enum which assigns
+    human-readable names to tensor rows.
+- `HistoryEntry` which represents state of the system at a certain
+    point in time before applying a specified input.
+- `SystemHistory` which stores `HistoryEntries` and provides convenient
+    methods to explore data.
+"""
+
+
 from dataclasses import dataclass, field
 from enum import IntEnum, auto
 
@@ -8,6 +19,10 @@ from torch import DoubleTensor, Tensor, cos
 
 
 class HistoryTensorFields(IntEnum):
+    """
+    Maps Tensor rows into human-readable constants and vice-versa.
+    """
+
     TIMESTAMP = 0
     INPUT = auto()
     CART_POSITION = auto()
@@ -19,7 +34,8 @@ class HistoryTensorFields(IntEnum):
 @dataclass
 class HistoryEntry:
     """
-    _summary_
+    Represents state of the system at a certain point in time before
+    applying a specified input.
 
     Fields
     ------
@@ -70,7 +86,8 @@ class HistoryEntry:
 @dataclass
 class SystemHistory:
     """
-    A smart container for history entries
+    A smart container for history entries which provides convenient
+    methods to explore data.
     """
 
     entries: list[HistoryEntry] = field(default_factory=list)
