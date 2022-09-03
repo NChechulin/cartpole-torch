@@ -50,3 +50,7 @@ class MultiSystemLearningContext:
             self.discreditizer.all_states,
             batch,
         )
+
+    @property
+    def batch_size(self) -> int:
+        return self.batch_state.size
