@@ -1,3 +1,10 @@
+"""
+This module contains Discreditizer class which is responsible for
+discreditizing state space (positions, pole angles, velocities and angular
+velocities) and action space (cart accelerations).
+"""
+
+
 from dataclasses import dataclass
 
 import torch
@@ -7,6 +14,13 @@ from torch import DoubleTensor
 
 @dataclass
 class Discreditizer:
+    """
+    Discreditizes state space (positions, pole angles, velocities and angular
+    velocities) and action space (cart accelerations) according to the config.
+
+    After discretization, stores the results.
+    """
+
     config: SystemConfiguration
 
     cart_accelerations: DoubleTensor = DoubleTensor()
@@ -14,7 +28,7 @@ class Discreditizer:
 
     def __post_init__(self) -> None:
         """
-        Generates all states from configuration
+        Generates all states from configuration.
         """
         xs = torch.linspace(  # type: ignore
             start=-self.config.limits.max_abs_position,
@@ -80,20 +94,54 @@ class Discreditizer:
 
     @property
     def cart_positions(self) -> DoubleTensor:
+        """
+        Returns
+        -------
+        DoubleTensor
+            1xN Tensor with cart positions.
+        """
         return self.__all_states[0]  # type: ignore
 
     @property
     def pole_angles(self) -> DoubleTensor:
+        """
+        Returns
+        -------
+        DoubleTensor
+            1xN Tensor with pole angles.
+
+        """
         return self.__all_states[1]  # type: ignore
 
     @property
     def cart_velocities(self) -> DoubleTensor:
+        """
+        Returns
+        -------
+        DoubleTensor
+            1xN Tensor with cart velocities.
+
+        """
         return self.__all_states[2]  # type: ignore
 
     @property
     def pole_angular_velocities(self) -> DoubleTensor:
+        """
+        Returns
+        -------
+        DoubleTensor
+            1xN Tensor with pole angular velocities.
+
+        """
         return self.__all_states[3]  # type: ignore
 
     @property
     def all_states(self) -> DoubleTensor:
+        """
+        Returns
+        -------
+        DoubleTensor
+            4xN Tensor storing cart positions, pole angles, cart velocities
+            and pole angular velocities.
+        """
         return self.__all_states
