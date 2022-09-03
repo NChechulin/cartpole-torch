@@ -95,11 +95,10 @@ class SystemConfiguration:
     `limits` : SystemLimits
         Limits of the system, such as maximum position, etc.
 
-    `input_timestep` : float
-        Time between adjusting the input of the system.
-        We assume the input is the same during the step (i.e. between two
-        time steps).
-        Measured in seconds.
+    `discretization` : DiscretizationParameters
+        Parameters of the system which are used for discretization of
+        continuos space and time.
+        Basically contains the number of pieces we split each dimension in.
 
     `dynamics_steps_per_input` : int
         Shows how many times we calculate dynamics of the system during
@@ -108,8 +107,6 @@ class SystemConfiguration:
         Value of 10 would mean that we update the state of the system
         10 times before adjusting the input.
     """
-
-    # FIXME: UPDATE docstring
 
     parameters: SystemParameters = SystemParameters()
     limits: SystemLimits = SystemLimits()
