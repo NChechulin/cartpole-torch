@@ -3,6 +3,8 @@ Defines configuration of the system - its limits and physical parameters
 """
 from dataclasses import dataclass
 
+from torch import pi
+
 
 @dataclass
 class SystemLimits:
@@ -27,6 +29,7 @@ class SystemLimits:
 
     max_abs_position: float = 0.25
     max_abs_velocity: float = 25.0
+    max_abs_angular_velocity: float = 6.0 * pi
     max_abs_acceleration: float = 7
 
 
