@@ -106,7 +106,7 @@ class CartPoleSystem:
         cur_st: DoubleTensor = self.current_state.as_tensor()
         steps: int = self.config.dynamics_steps_per_input
         # Delta time
-        dt: float = 1 / (steps * self.config.discretization.input_time)
+        d_time: float = 1 / (steps * self.config.discretization.input_time)
 
         grav: float = self.config.parameters.gravity  # Gravitational constant
         pole_len: float = self.config.parameters.pole_length
@@ -116,11 +116,12 @@ class CartPoleSystem:
             delta_state: DoubleTensor,
         ) -> None:
             ang = state[1]  # 1x1 Tensor with angle
-            u = best_input
             delta_state[0] = state[2]
             delta_state[1] = state[3]
-            delta_state[2] = u
-            delta_state[3] = -1.5 / pole_len * (u * cos(ang) + grav * sin(ang))
+            delta_state[2] = best_input
+            delta_state[3] = (
+                (-3 / 2) * (best_input * cos(ang) + grav * sin(ang)) / pole_len
+            )
 
         for _ in range(steps):
             # Evaluate derivatives
@@ -129,10 +130,10 @@ class CartPoleSystem:
                 delta_state=self.__ds1,
             )
             __compute_derivative(
-                state=cur_st + self.__ds1 * dt,  # type: ignore
+                state=cur_st + self.__ds1 * d_time,  # type: ignore
                 delta_state=self.__ds2,
             )
-            cur_st += (self.__ds1 + self.__ds2) / 2 * dt  # type: ignore
+            cur_st += (self.__ds1 + self.__ds2) / 2 * d_time  # type: ignore
 
         self.history.add_entry(
             timestamp=self.simulation_time,
@@ -177,7 +178,7 @@ class CartPoleMultiSystem:
         cur_st: DoubleTensor = torch.clone(cur_st)  # type: ignore
         steps: int = context.config.dynamics_steps_per_input
         # dynamics delta time
-        dt: float = 1 / (steps * context.config.discretization.input_time)
+        d_time: float = 1 / (steps * context.config.discretization.input_time)
 
         # Gravitational constant
         grav: float = context.config.parameters.gravity
@@ -197,9 +198,9 @@ class CartPoleMultiSystem:
 
         for _ in range(steps):
             # Evaluate derivatives
-            t1 = __compute_derivative(cur_st)
-            t2 = __compute_derivative(cur_st + t1 * dt)  # type: ignore
-            cur_st += (t1 + t2) / 2 * dt  # type: ignore
+            ds1 = __compute_derivative(cur_st)
+            ds2 = __compute_derivative(cur_st + ds1 * d_time)  # type: ignore
+            cur_st += (ds1 + ds2) / 2 * d_time  # type: ignore
 
         return cur_st
 
