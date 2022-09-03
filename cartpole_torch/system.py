@@ -1,5 +1,31 @@
+"""
+This module contains 2 classes which both represent CartPole systems.
+They are responsible for simulating the physics, although they have some
+differences:
+- `CartPoleSystem` stores all the information about one system and
+    evaluates the derivatives to get new state. It cannot calculate best
+    inputs (for now).
+- `CartPoleMultiSystem` has a different approach. The systems data is stored
+    in a `MultiSystemLearningContext` and the system itself only performs
+    neccessary calculations for multiple CartPole systems at a time.
+    It provides a "procedural" interface which allows us to change contexts
+    on fly if needed.
+
+    It supports evaluating best inputs for a given set of states and also
+    evaluating new states (after inputs are applied).
+Returns
+-------
+_type_
+    _description_
+
+Raises
+------
+ValueError
+    _description_
+"""
+
+
 from dataclasses import dataclass
-from tokenize import Double
 
 import torch
 from config import SystemConfiguration
@@ -118,6 +144,14 @@ class CartPoleSystem:
 
 
 class CartPoleMultiSystem:
+    """
+    Provides a "procedural" interface to evaluate best inputs and new states
+    (after applying inputs to given ones).
+    The systems data is stored
+    in a `MultiSystemLearningContext` and the system itself only performs
+    neccessary calculations for multiple CartPole systems at a time.
+    """
+
     @staticmethod
     def get_new_states(
         context: MultiSystemLearningContext, inputs: DoubleTensor
