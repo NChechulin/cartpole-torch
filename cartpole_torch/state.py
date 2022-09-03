@@ -1,14 +1,22 @@
+"""
+This module contains 2 important dataclasses:
+- `State` which represents the state of one system
+- `MultiSystemState` which holds states of multiple systems.
+The latter one is usually a batch.
+"""
+
+
 from dataclasses import dataclass
 from typing import Collection
 
 from numpy import pi
-from torch import DoubleTensor
+from torch import DoubleTensor, LongTensor
 
 
 @dataclass
 class State:
     """
-    Represents state of the system
+    Represents state of the system.
 
     Fields
     ------
@@ -116,3 +124,88 @@ class State:
             cart_velocity=arr[2],  # type: ignore
             angular_velocity=arr[3],  # type: ignore
         )
+
+
+@dataclass
+class MultiSystemState:
+    """
+    A class to represent states of multiple systems at a time.
+    """
+
+    _state_space: DoubleTensor
+    """
+    4xN tensor, where N is the number of systems
+    - `__state_space[0]` is a 1xN DoubleTensor containing cart positions
+    - `__state_space[1]` is a 1xN DoubleTensor containing pole angles
+    - `__state_space[2]` is a 1xN DoubleTensor containing cart velocities
+    - `__state_space[3]` is a 1xN DoubleTensor containing angular velocities
+    """
+
+    @staticmethod
+    def home(systems_num: int) -> "MultiSystemState":
+        """
+        Initializes a MultiSystemState with home states.
+
+        Parameters
+        ----------
+        systems_num : int
+            Number of systems to simulate.
+
+        Returns
+        -------
+        MultiSystemState
+        """
+        data = DoubleTensor(size=(4, systems_num))
+        home_state = State.home().as_tensor()
+
+        for i in range(systems_num):
+            data[:, i] = home_state
+
+        return MultiSystemState(_state_space=data)  # type: ignore
+
+    @staticmethod
+    def from_batch(
+        all_states: DoubleTensor,
+        batch: LongTensor,
+    ) -> "MultiSystemState":
+        """
+        Constructs a MultiSystemState from a sample of a state space.
+
+        Parameters
+        ----------
+        all_states : DoubleTensor
+            The state space (4xN DoubleTensor).
+        batch : IntTensor
+            A vector of integers containing the indexes of states
+            we want to simulate.
+
+        Returns
+        -------
+        MultiSystemState
+        """
+        data = all_states[:, batch]
+        return MultiSystemState(_state_space=data)  # type: ignore
+
+    @property
+    def size(self) -> int:
+        """
+        Returns the number of systems in current state
+
+        Returns
+        -------
+        int
+            The number of systems in current state
+        """
+        return self._state_space.shape[1]
+
+    @property
+    def states(self) -> DoubleTensor:
+        """
+        Returns all states
+
+        Returns
+        -------
+        DoubleTensor
+            _description_
+        """
+        return self._state_space
