@@ -13,9 +13,10 @@ from dataclasses import dataclass
 from enum import IntEnum, auto
 
 import torch
-from config import SystemParameters
-from state import State
 from torch import DoubleTensor, Tensor, cos
+
+from cartpole_torch.config import SystemParameters
+from cartpole_torch.state import State
 
 
 class HistoryTensorFields(IntEnum):

@@ -8,10 +8,11 @@ from dataclasses import dataclass
 from typing import Callable
 
 import torch
-from config import SystemConfiguration
-from discreditizer import Discreditizer
-from state import MultiSystemState
 from torch import DoubleTensor, LongTensor
+
+from cartpole_torch.config import SystemConfiguration
+from cartpole_torch.discreditizer import Discreditizer
+from cartpole_torch.state import MultiSystemState
 
 CostFunction = Callable[[DoubleTensor], DoubleTensor]
 

@@ -8,8 +8,9 @@ velocities) and action space (cart accelerations).
 from dataclasses import dataclass
 
 import torch
-from config import SystemConfiguration
 from torch import DoubleTensor
+
+from cartpole_torch.config import SystemConfiguration
 
 
 @dataclass
